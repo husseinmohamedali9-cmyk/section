@@ -12,8 +12,8 @@
      ========================================================== -->
 <script>
 var CONFIG={
-  SUPABASE_URL:"https://fhuggbnronjwojtdzyin.supabase.co",        // مثال: "https://abcdxyz.supabase.co"
-  SUPABASE_ANON_KEY:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZodWdnYm5yb25qd29qdGR6eWluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI1MzA5MjMsImV4cCI6MjEwODEwNjkyM30.tpCFmFcK816DfusMjbXPjxOjxh6Afv8Q1IPewpISTZQ",   // مثال: "eyJhbGciOi..."
+  SUPABASE_URL:"",        // مثال: "https://abcdxyz.supabase.co"
+  SUPABASE_ANON_KEY:"",   // مثال: "eyJhbGciOi..."
   BUCKET:"files",
   MAX_MB:50
 };
@@ -157,7 +157,7 @@ footer{text-align:center;color:var(--muted);font-size:13px;margin-top:40px}
 
 <dialog id="dLogin">
   <h4>دخول المشرف</h4>
-  <div id="lemW"><label for="lem">الإيميل</label><input class="f" id="lem" type="email" dir="ltr" autocomplete="username"></div><label for="lpw">الباسورد</label>
+  <div id="lemW"><label for="lem">اسم المستخدم</label><input class="f" id="lem" type="text" dir="ltr" autocomplete="username" autocapitalize="none"></div><label for="lpw">الباسورد</label>
   <input class="f" id="lpw" type="password" autocomplete="off">
   <div class="msg" id="lmsg"></div>
   <div class="acts"><button class="btn p" id="lok">دخول</button><button class="btn" data-close>إلغاء</button></div>
@@ -201,7 +201,7 @@ footer{text-align:center;color:var(--muted);font-size:13px;margin-top:40px}
 
 <div class="toast" id="toast" hidden></div>
 
-<script id="data" type="application/json">{"salt":"mth-s1","pw":"6af533cd393674388bfcca91f87e8ef2f41f77083f4019ab3c002d46d83723b3","years":{"math1":{"title":"Math 1","sub":"السنة الأولى","glyph":"∑","items":[{"id":"a1","week":"السكشن 1","type":"video","title":"شرح الدوال والنهايات","url":"https://youtube.com"},{"id":"a2","week":"السكشن 1","type":"pdf","title":"ملزمة السكشن الأول","url":"https://example.com/sec1.pdf"},{"id":"a3","week":"السكشن 2","type":"link","title":"تمارين تفاعلية على GeoGebra","url":"https://www.geogebra.org"}]},"math2":{"title":"Math 2","sub":"السنة الثانية","glyph":"∫","items":[{"id":"b1","week":"السكشن 1","type":"video","title":"مقدمة في التكامل","url":"https://youtube.com"}]},"math3":{"title":"Math 3","sub":"السنة الثالثة","glyph":"∂","items":[{"id":"c1","week":"السكشن 1","type":"link","title":"حاسبة المصفوفات","url":"https://www.wolframalpha.com"}]}}}</script>
+<script id="data" type="application/json">{"salt":"mth-s1","user":"mostafaboraey","pw":"604e1c088b344fea1b2699878f123cf13241450d67d9c2183d328760accf6bc8","years":{"math1":{"title":"Math 1","sub":"السنة الأولى","glyph":"∑","items":[{"id":"a1","week":"السكشن 1","type":"video","title":"شرح الدوال والنهايات","url":"https://youtube.com"},{"id":"a2","week":"السكشن 1","type":"pdf","title":"ملزمة السكشن الأول","url":"https://example.com/sec1.pdf"},{"id":"a3","week":"السكشن 2","type":"link","title":"تمارين تفاعلية على GeoGebra","url":"https://www.geogebra.org"}]},"math2":{"title":"Math 2","sub":"السنة الثانية","glyph":"∫","items":[{"id":"b1","week":"السكشن 1","type":"video","title":"مقدمة في التكامل","url":"https://youtube.com"}]},"math3":{"title":"Math 3","sub":"السنة الثالثة","glyph":"∂","items":[{"id":"c1","week":"السكشن 1","type":"link","title":"حاسبة المصفوفات","url":"https://www.wolframalpha.com"}]}}}</script>
 <script>
 var DATA=JSON.parse(document.getElementById("data").textContent);
 var root=document.documentElement,sb=null;
@@ -212,7 +212,6 @@ var TYPES={all:["الكل",""],video:["فيديوهات","▶"],pdf:["ملفات
 var CTA={video:"شاهد",pdf:"افتح الملف",link:"افتح اللينك",image:"اعرض"};
 var cur=null,fType="all",fWeek="all",fq="",admin=false,editId=null,tt;
 try{admin=!sb&&sessionStorage.getItem("adm")==="1"}catch(e){}
-$("lemW").hidden=!sb;
 $("fnote").textContent=sb?"أقصى حجم للملف "+CONFIG.MAX_MB+" ميجا. الفيديوهات الأكبر ارفعها على يوتيوب أو درايف وحط الرابط.":"رفع الملفات بيشتغل بعد ربط Supabase. لحد ما تربطه استخدم الروابط.";
 
 function toast(m,bad){var t=$("toast");t.textContent=m;t.style.background=bad?"var(--danger)":"";t.style.color=bad?"#fff":"";t.hidden=false;clearTimeout(tt);tt=setTimeout(function(){t.hidden=true},2600)}
@@ -300,15 +299,16 @@ window.addEventListener("hashchange",route);
 
 /* ====== المشرف ====== */
 document.addEventListener("click",function(e){var c=e.target.closest("[data-close]");if(c)c.closest("dialog").close()});
+function toEmail(u){u=u.trim().toLowerCase();return u.indexOf("@")>-1?u:u+"@example.com"}
 function hex(b){return Array.prototype.map.call(new Uint8Array(b),function(x){return ("0"+x.toString(16)).slice(-2)}).join("")}
 async function hashPw(p){return hex(await crypto.subtle.digest("SHA-256",new TextEncoder().encode(DATA.salt+p)))}
 $("lock").onclick=function(){if(admin)return;$("lpw").value="";$("lmsg").textContent="";$("dLogin").showModal()};
 $("lok").onclick=async function(){
   $("lmsg").textContent="";
   try{
-    if(sb){var r=await sb.auth.signInWithPassword({email:$("lem").value.trim(),password:$("lpw").value});
-      if(r.error){$("lmsg").textContent="الإيميل أو الباسورد غلط.";return}admin=true}
-    else{if(await hashPw($("lpw").value)!==DATA.pw){$("lmsg").textContent="الباسورد غلط.";return}admin=true;try{sessionStorage.setItem("adm","1")}catch(e){}}
+    if(sb){var r=await sb.auth.signInWithPassword({email:toEmail($("lem").value),password:$("lpw").value});
+      if(r.error){$("lmsg").textContent="اسم المستخدم أو الباسورد غلط.";return}admin=true}
+    else{if($("lem").value.trim().toLowerCase()!==DATA.user||await hashPw($("lpw").value)!==DATA.pw){$("lmsg").textContent="اسم المستخدم أو الباسورد غلط.";return}admin=true;try{sessionStorage.setItem("adm","1")}catch(e){}}
     $("dLogin").close();renderAll();
   }catch(e){$("lmsg").textContent="حصلت مشكلة. حاول تاني."}
 };
