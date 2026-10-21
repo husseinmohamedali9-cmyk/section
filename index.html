@@ -12,7 +12,7 @@
      ========================================================== -->
 <script>
 var CONFIG={
-  SUPABASE_URL:"https://fhuggbnronjwojtdzyin.supabase.co",        // مثال: "https://abcdxyz.supabase.co"
+  SUPABASE_URL:"https://fhuggbnronjwojtdzyin.supabase.co/rest/v1/",        // مثال: "https://abcdxyz.supabase.co"
   SUPABASE_ANON_KEY:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZodWdnYm5yb25qd29qdGR6eWluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI1MzA5MjMsImV4cCI6MjEwODEwNjkyM30.tpCFmFcK816DfusMjbXPjxOjxh6Afv8Q1IPewpISTZQ",   // مثال: "eyJhbGciOi..."
   BUCKET:"files",
   MAX_MB:50
@@ -127,7 +127,7 @@ footer{text-align:center;color:var(--muted);font-size:13px;margin-top:40px}
   </div>
 
   <div class="adm" id="adm" hidden>
-    <b>وضع المشرف</b>
+    <b>وضع المشرف <span class="note" id="stat"></span></b>
     <button class="btn" id="addBtn">＋ إضافة محتوى</button>
     <button class="btn" id="pwBtn">تغيير الباسورد</button>
     <button class="btn" id="outBtn">خروج</button>
@@ -157,7 +157,7 @@ footer{text-align:center;color:var(--muted);font-size:13px;margin-top:40px}
 
 <dialog id="dLogin">
   <h4>دخول المشرف</h4>
-  <div id="lemW"><label for="lem">اسم المستخدم</label><input class="f" id="lem" type="text" dir="ltr" autocomplete="username" autocapitalize="none"></div><label for="lpw">الباسورد</label>
+  <label for="lpw">الباسورد</label>
   <input class="f" id="lpw" type="password" autocomplete="off">
   <div class="msg" id="lmsg"></div>
   <div class="acts"><button class="btn p" id="lok">دخول</button><button class="btn" data-close>إلغاء</button></div>
@@ -188,7 +188,7 @@ footer{text-align:center;color:var(--muted);font-size:13px;margin-top:40px}
 
 <dialog id="dPw">
   <h4>تغيير الباسورد</h4>
-  <label for="npw">الباسورد الجديد (6 حروف على الأقل)</label>
+  <label for="npw">الباسورد الجديد (4 حروف على الأقل)</label>
   <input class="f" id="npw" type="password" autocomplete="off">
   <div class="msg" id="pmsg"></div>
   <div class="acts"><button class="btn p" id="pok">تغيير</button><button class="btn" data-close>إلغاء</button></div>
@@ -201,7 +201,7 @@ footer{text-align:center;color:var(--muted);font-size:13px;margin-top:40px}
 
 <div class="toast" id="toast" hidden></div>
 
-<script id="data" type="application/json">{"salt":"mth-s1","user":"mostafaboraey","pw":"604e1c088b344fea1b2699878f123cf13241450d67d9c2183d328760accf6bc8","years":{"math1":{"title":"Math 1","sub":"السنة الأولى","glyph":"∑","items":[{"id":"a1","week":"السكشن 1","type":"video","title":"شرح الدوال والنهايات","url":"https://youtube.com"},{"id":"a2","week":"السكشن 1","type":"pdf","title":"ملزمة السكشن الأول","url":"https://example.com/sec1.pdf"},{"id":"a3","week":"السكشن 2","type":"link","title":"تمارين تفاعلية على GeoGebra","url":"https://www.geogebra.org"}]},"math2":{"title":"Math 2","sub":"السنة الثانية","glyph":"∫","items":[{"id":"b1","week":"السكشن 1","type":"video","title":"مقدمة في التكامل","url":"https://youtube.com"}]},"math3":{"title":"Math 3","sub":"السنة الثالثة","glyph":"∂","items":[{"id":"c1","week":"السكشن 1","type":"link","title":"حاسبة المصفوفات","url":"https://www.wolframalpha.com"}]}}}</script>
+<script id="data" type="application/json">{"salt":"mth-s1","pw":"b4ce9af6f88076ad60182e63c99ed2cfce7b4dd92439f199e81dfa263293b564","years":{"math1":{"title":"Math 1","sub":"السنة الأولى","glyph":"∑","items":[{"id":"a1","week":"السكشن 1","type":"video","title":"شرح الدوال والنهايات","url":"https://youtube.com"},{"id":"a2","week":"السكشن 1","type":"pdf","title":"ملزمة السكشن الأول","url":"https://example.com/sec1.pdf"},{"id":"a3","week":"السكشن 2","type":"link","title":"تمارين تفاعلية على GeoGebra","url":"https://www.geogebra.org"}]},"math2":{"title":"Math 2","sub":"السنة الثانية","glyph":"∫","items":[{"id":"b1","week":"السكشن 1","type":"video","title":"مقدمة في التكامل","url":"https://youtube.com"}]},"math3":{"title":"Math 3","sub":"السنة الثالثة","glyph":"∂","items":[{"id":"c1","week":"السكشن 1","type":"link","title":"حاسبة المصفوفات","url":"https://www.wolframalpha.com"}]}}}</script>
 <script>
 var DATA=JSON.parse(document.getElementById("data").textContent);
 var root=document.documentElement,sb=null;
@@ -210,7 +210,7 @@ function esc(s){var d=document.createElement("div");d.textContent=s==null?"":s;r
 if(CONFIG.SUPABASE_URL&&CONFIG.SUPABASE_ANON_KEY&&window.supabase){sb=supabase.createClient(CONFIG.SUPABASE_URL,CONFIG.SUPABASE_ANON_KEY)}
 var TYPES={all:["الكل",""],video:["فيديوهات","▶"],pdf:["ملفات PDF","📄"],image:["صور","🖼️"],link:["لينكات","🔗"]};
 var CTA={video:"شاهد",pdf:"افتح الملف",link:"افتح اللينك",image:"اعرض"};
-var cur=null,fType="all",fWeek="all",fq="",admin=false,editId=null,tt;
+var adminPw="",loadErr="",cur=null,fType="all",fWeek="all",fq="",admin=false,editId=null,tt;
 try{admin=!sb&&sessionStorage.getItem("adm")==="1"}catch(e){}
 $("fnote").textContent=sb?"أقصى حجم للملف "+CONFIG.MAX_MB+" ميجا. الفيديوهات الأكبر ارفعها على يوتيوب أو درايف وحط الرابط.":"رفع الملفات بيشتغل بعد ربط Supabase. لحد ما تربطه استخدم الروابط.";
 
@@ -226,18 +226,18 @@ paintTheme();
 /* التحميل والحفظ */
 async function load(){
   try{
-    if(sb){var r=await sb.from("site").select("data").eq("id",1).maybeSingle();if(r.data&&r.data.data&&r.data.data.years)DATA.years=r.data.data.years}
+    if(sb){var r=await sb.from("site").select("data").eq("id",1).maybeSingle();if(r.error)loadErr=r.error.message;if(r.data&&r.data.data&&r.data.data.years)DATA.years=r.data.data.years}
     else{var s=localStorage.getItem("mathsite-data");if(s)DATA=JSON.parse(s)}
-  }catch(e){}
-  if(sb){try{var g=await sb.auth.getSession();if(g.data&&g.data.session)admin=true}catch(e){}}
+  }catch(e){loadErr=(e&&e.message)||"خطأ"}
+  if(sb){try{var ap=sessionStorage.getItem("apw");if(ap){var c=await sb.rpc("check_admin",{p:ap});if(c.data===true){admin=true;adminPw=ap}}}catch(e){}}
   renderAll();route();
 }
 async function save(){
   try{
-    if(sb){var r=await sb.from("site").upsert({id:1,data:{years:DATA.years}});if(r.error)throw r.error}
-    else localStorage.setItem("mathsite-data",JSON.stringify(DATA));
+    if(sb){var r=await sb.rpc("save_site",{p:adminPw,d:{years:DATA.years}});if(r.error)throw r.error}
+    else{localStorage.setItem("mathsite-data",JSON.stringify(DATA));toast("اتحفظ على جهازك بس: الموقع مش متصل بـ Supabase",true);return}
     toast("تم الحفظ ✓");
-  }catch(e){toast("فشل الحفظ: "+((e&&e.message)||"تأكد من الاتصال وتسجيل الدخول"),true)}
+  }catch(e){toast(((e&&e.message)||"").indexOf("wrong password")>-1?"الباسورد اتغيّر أو انتهت الجلسة. اعمل خروج وادخل تاني.":"فشل الحفظ: "+((e&&e.message)||"تأكد من الاتصال"),true)}
 }
 
 function renderHome(){
@@ -293,36 +293,41 @@ function route(){
   }else{cur=null;$("year").hidden=true;$("home").hidden=false}
   window.scrollTo(0,0);
 }
-function paintAdmin(){$("adm").hidden=!admin;$("lock").textContent=admin?"🔓":"🔒"}
+function paintAdmin(){$("stat").textContent=sb?(loadErr?"🔴 مشكلة في القراءة: "+loadErr:"🟢 متصل بـ Supabase"):(CONFIG.SUPABASE_URL?"🔴 مكتبة Supabase ما اتحمّلتش":"🔴 مش متصل بـ Supabase (CONFIG فاضي)");$("adm").hidden=!admin;$("lock").textContent=admin?"🔓":"🔒"}
 function renderAll(){renderHome();if(cur)render();paintAdmin()}
 window.addEventListener("hashchange",route);
 
 /* ====== المشرف ====== */
 document.addEventListener("click",function(e){var c=e.target.closest("[data-close]");if(c)c.closest("dialog").close()});
-function toEmail(u){u=u.trim().toLowerCase();return u.indexOf("@")>-1?u:u+"@example.com"}
 function hex(b){return Array.prototype.map.call(new Uint8Array(b),function(x){return ("0"+x.toString(16)).slice(-2)}).join("")}
 async function hashPw(p){return hex(await crypto.subtle.digest("SHA-256",new TextEncoder().encode(DATA.salt+p)))}
 $("lock").onclick=function(){if(admin)return;$("lpw").value="";$("lmsg").textContent="";$("dLogin").showModal()};
 $("lok").onclick=async function(){
   $("lmsg").textContent="";
   try{
-    if(sb){var r=await sb.auth.signInWithPassword({email:toEmail($("lem").value),password:$("lpw").value});
-      if(r.error){$("lmsg").textContent="اسم المستخدم أو الباسورد غلط.";return}admin=true}
-    else{if($("lem").value.trim().toLowerCase()!==DATA.user||await hashPw($("lpw").value)!==DATA.pw){$("lmsg").textContent="اسم المستخدم أو الباسورد غلط.";return}admin=true;try{sessionStorage.setItem("adm","1")}catch(e){}}
+    if(sb){var r=await sb.rpc("check_admin",{p:$("lpw").value});if(r.error||r.data!==true){$("lmsg").textContent=r.error?"مشكلة في الاتصال: "+r.error.message:"الباسورد غلط.";return}admin=true;adminPw=$("lpw").value;try{sessionStorage.setItem("apw",adminPw)}catch(e){}}
+    else{if(await hashPw($("lpw").value)!==DATA.pw){$("lmsg").textContent="الباسورد غلط.";return}admin=true;try{sessionStorage.setItem("adm","1")}catch(e){}}
     $("dLogin").close();renderAll();
   }catch(e){$("lmsg").textContent="حصلت مشكلة. حاول تاني."}
 };
 $("lpw").onkeydown=function(e){if(e.key==="Enter")$("lok").click()};
-$("outBtn").onclick=function(){admin=false;try{sessionStorage.removeItem("adm")}catch(e){}if(sb)sb.auth.signOut();renderAll()};
+$("outBtn").onclick=function(){admin=false;try{sessionStorage.removeItem("adm")}catch(e){}adminPw="";try{sessionStorage.removeItem("apw")}catch(e){}renderAll()};
 $("pwBtn").onclick=function(){$("npw").value="";$("pmsg").textContent="";$("dPw").showModal()};
 $("pok").onclick=async function(){
-  var p=$("npw").value;if(p.length<6){$("pmsg").textContent="الباسورد لازم يكون 6 حروف على الأقل.";return}
+  var p=$("npw").value;if(p.length<4){$("pmsg").textContent="الباسورد لازم يكون 4 حروف على الأقل.";return}$("pmsg").textContent="جاري التغيير...";
   try{
-    if(sb){var r=await sb.auth.updateUser({password:p});if(r.error)throw r.error}
+    if(sb){var r=await sb.rpc("change_password",{old_pw:adminPw,new_pw:p});if(r.error)throw r.error;adminPw=p;try{sessionStorage.setItem("apw",p)}catch(e){}}
     else{DATA.pw=await hashPw(p);await save()}
     $("dPw").close();toast("تم تغيير الباسورد ✓");
-  }catch(e){$("pmsg").textContent="تعذر تغيير الباسورد."}
+  }catch(e){
+    var m=((e&&e.message)||"").toLowerCase(),t;
+    if(m.indexOf("wrong password")>-1)t="انتهت الجلسة. اعمل خروج وادخل تاني.";else if(m.indexOf("short")>-1)t="الباسورد قصير.";
+    else if(m.indexOf("at least")>-1||m.indexOf("weak")>-1)t="الباسورد ضعيف أو قصير. استخدم 8 حروف على الأقل فيها أرقام.";
+    else if(m.indexOf("session")>-1||m.indexOf("jwt")>-1||m.indexOf("not authenticated")>-1)t="انتهت الجلسة. اعمل خروج وادخل تاني وجرّب.";
+    else t="تعذر تغيير الباسورد"+(m?": "+m:".");
+    $("pmsg").textContent=t}
 };
+$("npw").onkeydown=function(e){if(e.key==="Enter")$("pok").click()};
 
 function openItem(id){
   editId=id||null;var r=id?findItem(id):null;
