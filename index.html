@@ -5,7 +5,21 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>سكاشن الرياضيات | كلية التربية</title>
 <link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
-<style id="css">
+<!-- ==========================================================
+     إعدادات الربط مع Supabase  (ده المكان الوحيد اللي هتعدل فيه)
+     1) بدّل الرابط اللي بين علامتي التنصيص جنب SUPABASE_URL
+     2) بدّل المفتاح اللي بين علامتي التنصيص جنب SUPABASE_ANON_KEY
+     ========================================================== -->
+<script>
+var CONFIG={
+  SUPABASE_URL:"",        // مثال: "https://abcdxyz.supabase.co"
+  SUPABASE_ANON_KEY:"",   // مثال: "eyJhbGciOi..."
+  BUCKET:"files",
+  MAX_MB:50
+};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<style>
 :root{
   color-scheme:light;
   --bg:#f4f8fb; --grid:rgba(31,90,138,.07); --surface:#ffffff; --ink:#1b2a41; --muted:#5d6b7e;
@@ -92,11 +106,12 @@ label{display:block;font-size:14px;color:var(--muted);margin:12px 0 4px}
 footer{text-align:center;color:var(--muted);font-size:13px;margin-top:40px}
 [hidden]{display:none!important}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+.toast{position:fixed;bottom:calc(20px + env(safe-area-inset-bottom,0px));inset-inline:0;margin:auto;width:max-content;max-width:90vw;background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;z-index:99;font-size:14px;box-shadow:var(--shadow)}
 </style>
 </head>
 <body>
-<div id="root"></div>
-<template id="shell">
+
 <div class="sym" aria-hidden="true">
   <span style="top:8%;right:6%">π</span><span style="top:22%;left:8%;font-size:80px">∑</span>
   <span style="top:48%;right:12%;font-size:70px">∫</span><span style="top:64%;left:5%">√</span>
@@ -115,9 +130,7 @@ footer{text-align:center;color:var(--muted);font-size:13px;margin-top:40px}
     <b>وضع المشرف</b>
     <button class="btn" id="addBtn">＋ إضافة محتوى</button>
     <button class="btn" id="pwBtn">تغيير الباسورد</button>
-    <button class="btn p" id="pubBtn">نشر التغييرات</button>
     <button class="btn" id="outBtn">خروج</button>
-    <span class="note" id="admNote" style="flex-basis:100%;margin:0"></span>
   </div>
 
   <main id="home">
@@ -144,7 +157,7 @@ footer{text-align:center;color:var(--muted);font-size:13px;margin-top:40px}
 
 <dialog id="dLogin">
   <h4>دخول المشرف</h4>
-  <label for="lpw">الباسورد</label>
+  <div id="lemW"><label for="lem">الإيميل</label><input class="f" id="lem" type="email" dir="ltr" autocomplete="username"></div><label for="lpw">الباسورد</label>
   <input class="f" id="lpw" type="password" autocomplete="off">
   <div class="msg" id="lmsg"></div>
   <div class="acts"><button class="btn p" id="lok">دخول</button><button class="btn" data-close>إلغاء</button></div>
@@ -168,7 +181,7 @@ footer{text-align:center;color:var(--muted);font-size:13px;margin-top:40px}
   <input class="f" id="iUrl" dir="ltr" placeholder="https://...">
   <label for="iFile">أو ارفع ملف من جهازك (فيديو أو صورة أو PDF)</label>
   <input class="f" id="iFile" type="file" accept="video/*,image/*,application/pdf">
-  <div class="note">أقصى حجم للملف المرفوع 20 ميجا. الفيديوهات الأكبر ارفعها على يوتيوب أو درايف وحط الرابط.</div>
+  <div class="note" id="fnote"></div>
   <div class="msg" id="imsg"></div>
   <div class="acts"><button class="btn p" id="iok">حفظ</button><button class="btn" data-close>إلغاء</button></div>
 </dialog>
@@ -185,21 +198,24 @@ footer{text-align:center;color:var(--muted);font-size:13px;margin-top:40px}
   <h4 id="vt"></h4><div id="vb"></div>
   <div class="acts"><button class="btn" data-close>إغلاق</button></div>
 </dialog>
-</template>
+
+<div class="toast" id="toast" hidden></div>
 
 <script id="data" type="application/json">{"salt":"mth-s1","pw":"6af533cd393674388bfcca91f87e8ef2f41f77083f4019ab3c002d46d83723b3","years":{"math1":{"title":"Math 1","sub":"السنة الأولى","glyph":"∑","items":[{"id":"a1","week":"السكشن 1","type":"video","title":"شرح الدوال والنهايات","url":"https://youtube.com"},{"id":"a2","week":"السكشن 1","type":"pdf","title":"ملزمة السكشن الأول","url":"https://example.com/sec1.pdf"},{"id":"a3","week":"السكشن 2","type":"link","title":"تمارين تفاعلية على GeoGebra","url":"https://www.geogebra.org"}]},"math2":{"title":"Math 2","sub":"السنة الثانية","glyph":"∫","items":[{"id":"b1","week":"السكشن 1","type":"video","title":"مقدمة في التكامل","url":"https://youtube.com"}]},"math3":{"title":"Math 3","sub":"السنة الثالثة","glyph":"∂","items":[{"id":"c1","week":"السكشن 1","type":"link","title":"حاسبة المصفوفات","url":"https://www.wolframalpha.com"}]}}}</script>
-
-<script id="app">
-var HEAD='<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>سكاشن الرياضيات | كلية التربية</title><link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">';
+<script>
 var DATA=JSON.parse(document.getElementById("data").textContent);
-var root=document.documentElement;
-document.getElementById("root").innerHTML=document.getElementById("shell").innerHTML;
+var root=document.documentElement,sb=null;
 var $=function(i){return document.getElementById(i)};
 function esc(s){var d=document.createElement("div");d.textContent=s==null?"":s;return d.innerHTML}
+if(CONFIG.SUPABASE_URL&&CONFIG.SUPABASE_ANON_KEY&&window.supabase){sb=supabase.createClient(CONFIG.SUPABASE_URL,CONFIG.SUPABASE_ANON_KEY)}
 var TYPES={all:["الكل",""],video:["فيديوهات","▶"],pdf:["ملفات PDF","📄"],image:["صور","🖼️"],link:["لينكات","🔗"]};
 var CTA={video:"شاهد",pdf:"افتح الملف",link:"افتح اللينك",image:"اعرض"};
-var cur=null,fType="all",fWeek="all",fq="",admin=false,dirty=false,editId=null;
-try{admin=sessionStorage.getItem("adm")==="1"}catch(e){}
+var cur=null,fType="all",fWeek="all",fq="",admin=false,editId=null,tt;
+try{admin=!sb&&sessionStorage.getItem("adm")==="1"}catch(e){}
+$("lemW").hidden=!sb;
+$("fnote").textContent=sb?"أقصى حجم للملف "+CONFIG.MAX_MB+" ميجا. الفيديوهات الأكبر ارفعها على يوتيوب أو درايف وحط الرابط.":"رفع الملفات بيشتغل بعد ربط Supabase. لحد ما تربطه استخدم الروابط.";
+
+function toast(m,bad){var t=$("toast");t.textContent=m;t.style.background=bad?"var(--danger)":"";t.style.color=bad?"#fff":"";t.hidden=false;clearTimeout(tt);tt=setTimeout(function(){t.hidden=true},2600)}
 
 /* الثيم */
 function isDark(){var t=root.getAttribute("data-theme");return t?t==="dark":matchMedia("(prefers-color-scheme: dark)").matches}
@@ -208,14 +224,29 @@ try{var st=localStorage.getItem("theme");if(st)root.setAttribute("data-theme",st
 $("theme").onclick=function(){var n=isDark()?"light":"dark";root.setAttribute("data-theme",n);try{localStorage.setItem("theme",n)}catch(e){}paintTheme()};
 paintTheme();
 
-/* الصفحة الرئيسية */
+/* التحميل والحفظ */
+async function load(){
+  try{
+    if(sb){var r=await sb.from("site").select("data").eq("id",1).maybeSingle();if(r.data&&r.data.data&&r.data.data.years)DATA.years=r.data.data.years}
+    else{var s=localStorage.getItem("mathsite-data");if(s)DATA=JSON.parse(s)}
+  }catch(e){}
+  if(sb){try{var g=await sb.auth.getSession();if(g.data&&g.data.session)admin=true}catch(e){}}
+  renderAll();route();
+}
+async function save(){
+  try{
+    if(sb){var r=await sb.from("site").upsert({id:1,data:{years:DATA.years}});if(r.error)throw r.error}
+    else localStorage.setItem("mathsite-data",JSON.stringify(DATA));
+    toast("تم الحفظ ✓");
+  }catch(e){toast("فشل الحفظ: "+((e&&e.message)||"تأكد من الاتصال وتسجيل الدخول"),true)}
+}
+
 function renderHome(){
   $("years").innerHTML=Object.keys(DATA.years).map(function(k){var d=DATA.years[k];
     return '<button class="year" data-k="'+k+'"><span class="g">'+d.glyph+'</span><b>'+d.title+'</b><small>'+d.sub+' · '+d.items.length+' ملف</small></button>'}).join("");
 }
 $("years").onclick=function(e){var b=e.target.closest(".year");if(b)location.hash=b.dataset.k};
 $("back").onclick=function(){location.hash="";route()};
-
 function chips(el,pairs,active,attr){
   el.innerHTML=pairs.map(function(p){return '<button class="chip" '+attr+'="'+esc(p[0])+'" aria-pressed="'+(p[0]===active)+'">'+esc(p[1])+'</button>'}).join("")}
 
@@ -250,7 +281,7 @@ $("list").onclick=function(e){
     $("vb").innerHTML=f.type==="video"?'<video controls playsinline preload="metadata" src="'+esc(f.url)+'"></video>':'<img alt="'+esc(f.title)+'" src="'+esc(f.url)+'">';
     $("viewer").showModal()}
   if(ed)openItem(ed.dataset.edit);
-  if(dl&&confirm("متأكد إنك عايز تحذف العنصر ده؟")){var r=findItem(dl.dataset.del);r.y&&(DATA.years[r.y].items=DATA.years[r.y].items.filter(function(i){return i.id!==r.i.id}));markDirty();renderAll()}
+  if(dl&&confirm("متأكد إنك عايز تحذف العنصر ده؟")){var r=findItem(dl.dataset.del);DATA.years[r.y].items=DATA.years[r.y].items.filter(function(i){return i.id!==r.i.id});renderAll();save()}
 };
 $("viewer").addEventListener("close",function(){$("vb").innerHTML=""});
 
@@ -263,31 +294,34 @@ function route(){
   }else{cur=null;$("year").hidden=true;$("home").hidden=false}
   window.scrollTo(0,0);
 }
+function paintAdmin(){$("adm").hidden=!admin;$("lock").textContent=admin?"🔓":"🔒"}
 function renderAll(){renderHome();if(cur)render();paintAdmin()}
 window.addEventListener("hashchange",route);
 
 /* ====== المشرف ====== */
 document.addEventListener("click",function(e){var c=e.target.closest("[data-close]");if(c)c.closest("dialog").close()});
-function hex(buf){return Array.prototype.map.call(new Uint8Array(buf),function(b){return ("0"+b.toString(16)).slice(-2)}).join("")}
-async function hashPw(p){if(!(window.crypto&&crypto.subtle))throw new Error("no");return hex(await crypto.subtle.digest("SHA-256",new TextEncoder().encode(DATA.salt+p)))}
-function markDirty(){dirty=true;paintAdmin()}
-function paintAdmin(){
-  $("adm").hidden=!admin;$("lock").textContent=admin?"🔓":"🔒";
-  $("pubBtn").disabled=!dirty;$("admNote").textContent=dirty?"عندك تعديلات لسه ما اتنشرتش. دوس «نشر التغييرات» عشان الطلبة يشوفوها.":"";
-}
-$("lock").onclick=function(){if(admin){return}$("lpw").value="";$("lmsg").textContent="";$("dLogin").showModal()};
+function hex(b){return Array.prototype.map.call(new Uint8Array(b),function(x){return ("0"+x.toString(16)).slice(-2)}).join("")}
+async function hashPw(p){return hex(await crypto.subtle.digest("SHA-256",new TextEncoder().encode(DATA.salt+p)))}
+$("lock").onclick=function(){if(admin)return;$("lpw").value="";$("lmsg").textContent="";$("dLogin").showModal()};
 $("lok").onclick=async function(){
-  try{var h=await hashPw($("lpw").value);
-    if(h===DATA.pw){admin=true;try{sessionStorage.setItem("adm","1")}catch(e){}$("dLogin").close();renderAll()}
-    else $("lmsg").textContent="الباسورد غلط."}
-  catch(e){$("lmsg").textContent="المتصفح ده مش بيدعم التحقق من الباسورد."}
+  $("lmsg").textContent="";
+  try{
+    if(sb){var r=await sb.auth.signInWithPassword({email:$("lem").value.trim(),password:$("lpw").value});
+      if(r.error){$("lmsg").textContent="الإيميل أو الباسورد غلط.";return}admin=true}
+    else{if(await hashPw($("lpw").value)!==DATA.pw){$("lmsg").textContent="الباسورد غلط.";return}admin=true;try{sessionStorage.setItem("adm","1")}catch(e){}}
+    $("dLogin").close();renderAll();
+  }catch(e){$("lmsg").textContent="حصلت مشكلة. حاول تاني."}
 };
 $("lpw").onkeydown=function(e){if(e.key==="Enter")$("lok").click()};
-$("outBtn").onclick=function(){if(dirty&&!confirm("فيه تعديلات ما اتنشرتش وهتضيع. تكمل؟"))return;admin=false;try{sessionStorage.removeItem("adm")}catch(e){}if(dirty){location.reload();return}renderAll()};
+$("outBtn").onclick=function(){admin=false;try{sessionStorage.removeItem("adm")}catch(e){}if(sb)sb.auth.signOut();renderAll()};
 $("pwBtn").onclick=function(){$("npw").value="";$("pmsg").textContent="";$("dPw").showModal()};
 $("pok").onclick=async function(){
   var p=$("npw").value;if(p.length<6){$("pmsg").textContent="الباسورد لازم يكون 6 حروف على الأقل.";return}
-  try{DATA.pw=await hashPw(p);$("dPw").close();markDirty()}catch(e){$("pmsg").textContent="تعذر تغيير الباسورد في المتصفح ده."}
+  try{
+    if(sb){var r=await sb.auth.updateUser({password:p});if(r.error)throw r.error}
+    else{DATA.pw=await hashPw(p);await save()}
+    $("dPw").close();toast("تم تغيير الباسورد ✓");
+  }catch(e){$("pmsg").textContent="تعذر تغيير الباسورد."}
 };
 
 function openItem(id){
@@ -311,38 +345,25 @@ $("iok").onclick=async function(){
   if(!w||!t){msg("اكتب اسم السكشن وعنوان المحتوى.");return}
   var old=editId?findItem(editId):null;
   if(f){
-    if(f.size>20*1024*1024){msg("الملف أكبر من 20 ميجا. ارفعه على يوتيوب أو درايف وحط الرابط.");return}
-    var assets=window.claude&&await claude.use("assets");
-    if(!assets){msg("الرفع متاح بس لو فتحت الصفحة من حساب صاحبها على claude.ai.");return}
-    try{msg("جاري الرفع... استنى لحظات");var r=await assets.upload(f);url=r.url;up=true;msg("")}
-    catch(e){msg("فشل الرفع: "+((e&&e.message)||"حاول تاني"));return}
+    if(!sb){msg("رفع الملفات محتاج ربط Supabase. استخدم رابط دلوقتي.");return}
+    if(f.size>CONFIG.MAX_MB*1048576){msg("الملف أكبر من "+CONFIG.MAX_MB+" ميجا. ارفعه على يوتيوب أو درايف وحط الرابط.");return}
+    try{
+      msg("جاري الرفع... استنى لحظات");
+      var ext=(f.name.match(/\.[A-Za-z0-9]+$/)||[""])[0].toLowerCase(),path=Date.now()+"-"+Math.random().toString(36).slice(2,7)+ext;
+      var u=await sb.storage.from(CONFIG.BUCKET).upload(path,f,{contentType:f.type||undefined});
+      if(u.error)throw u.error;
+      url=sb.storage.from(CONFIG.BUCKET).getPublicUrl(path).data.publicUrl;up=true;msg("");
+    }catch(e){msg("فشل الرفع: "+((e&&e.message)||"حاول تاني"));return}
   }else if(old&&old.i.up&&url===old.i.url){up=true}
   if(!url){msg("حط رابط أو اختار ملف.");return}
-  if(!/^(https?:\/\/|\/_blob\/)/i.test(url)){msg("الرابط لازم يبدأ بـ https://");return}
+  if(!/^https?:\/\//i.test(url)){msg("الرابط لازم يبدأ بـ https://");return}
   var item={id:editId||("i"+Date.now().toString(36)+Math.random().toString(36).slice(2,5)),week:w,type:type,title:t,url:url};
   if(up)item.up=true;
   if(old){DATA.years[old.y].items=DATA.years[old.y].items.filter(function(i){return i.id!==editId})}
   DATA.years[y].items.push(item);
-  $("dItem").close();markDirty();renderAll();
+  $("dItem").close();renderAll();save();
 };
-
-function buildDoc(){
-  var json=JSON.stringify(DATA).replace(/</g,"\\u003c");
-  return "<!DOCTYPE html>\n<html lang=\"ar\" dir=\"rtl\">\n<head>"+HEAD+"<style id=\"css\">"+$("css").textContent+"</style></head>\n<body><div id=\"root\"></div>"+$("shell").outerHTML+
-    "<script id=\"data\" type=\"application/json\">"+json+"<\/script><script id=\"app\">"+$("app").textContent+"<\/script></body></html>";
-}
-$("pubBtn").onclick=async function(){
-  var a=window.claude&&await claude.use("artifact");
-  if(!a){$("admNote").textContent="النشر غير متاح هنا. افتح الصفحة من حسابك على claude.ai.";return}
-  $("pubBtn").disabled=true;$("admNote").textContent="جاري النشر...";
-  try{await a.publish(buildDoc());dirty=false}
-  catch(e){var c=e&&e.code;
-    $("admNote").textContent=c==="not_writer"||c==="not_granted"?"مفيش عندك صلاحية النشر. لازم تفتح الصفحة من حساب صاحبها.":c==="conflict"?"":"فشل النشر ("+(c||"خطأ")+"). حاول تاني.";
-    paintAdmin()}
-};
-window.addEventListener("beforeunload",function(e){if(dirty){e.preventDefault();e.returnValue=""}});
-
-renderAll();route();
+load();
 </script>
 </body>
 </html>
